@@ -10,13 +10,16 @@ import UIKit
 /// Controller to show and search for Locations
 final class RMCharacterViewController: UIViewController {
 
-    private let characterListView = CharacterListView()
+    private let characterListView = RMCharacterListView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Characters"
         view.addSubview(characterListView)
+        setupView()
+    }
+    private func setupView() {
         NSLayoutConstraint.activate([
             characterListView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             characterListView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
@@ -24,5 +27,6 @@ final class RMCharacterViewController: UIViewController {
             characterListView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
+    
 
 }

@@ -8,7 +8,7 @@
 import UIKit
 
 /// View that handles showing list of character, loader etc.
-final class CharacterListView: UIView {
+final class RMCharacterListView: UIView {
     
     private let viewModel = RMCharacterListViewViewModel()
     
@@ -28,8 +28,8 @@ final class CharacterListView: UIView {
         collectionView.isHidden = true
         collectionView.alpha = 0
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(UICollectionViewCell.self,
-                                forCellWithReuseIdentifier: "cell")
+        collectionView.register(RMCharacterCollectionViewCell.self,
+                                forCellWithReuseIdentifier: RMCharacterCollectionViewCell.cellIdentifier)
         return collectionView
     }()
     
@@ -70,7 +70,7 @@ final class CharacterListView: UIView {
         collectionView.delegate = viewModel
         
         DispatchQueue.main.asyncAfter(deadline: .now()+2, execute: {
-            self.spinner.startAnimating()
+            self.spinner.stopAnimating()
             self.collectionView.isHidden = false
             
             UIView.animate(withDuration: 0.4) {

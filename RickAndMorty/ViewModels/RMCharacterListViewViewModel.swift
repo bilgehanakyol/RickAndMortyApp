@@ -77,10 +77,34 @@ extension RMCharacterListViewViewModel: UICollectionViewDataSource, UICollection
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RMCharacterCollectionViewCell.cellIdentifier,
             for: indexPath
         ) as? RMCharacterCollectionViewCell else {
-            fatalError("unsupported cell")
+            fatalError("Unsupported cell")
         }
         cell.configure(with: cellViewModels[indexPath.row])
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionFooter else {
+            fatalError("Unsupported")
+        }
+        
+        guard let footer = collectionView.dequeueReusableSupplementaryView(
+            ofKind: kind,
+            withReuseIdentifier: RMFooterLoadingCollectionReusableView.identifier,
+            for: indexPath
+        ) as? RMFooterLoadingCollectionReusableView
+                else {
+            fatalError("Unupported")
+        }
+        footer.startAnimatig()
+        return footer
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        guard shouldShowLoadMoreIndicator else {
+            return .zero
+        }
+        return CGSize(width: collectionView.frame.height, height: 100)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

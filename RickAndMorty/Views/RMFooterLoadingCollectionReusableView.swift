@@ -35,7 +35,6 @@ final class RMFooterLoadingCollectionReusableView: UICollectionReusableView {
             spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
             spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
-
     }
     
     public func startAnimatig() {

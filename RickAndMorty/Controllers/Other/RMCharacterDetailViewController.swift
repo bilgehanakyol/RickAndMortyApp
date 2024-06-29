@@ -6,8 +6,6 @@
 //
 
 import UIKit
-
-
 /// Controller to show info about single character
 final class RMCharacterDetailViewController: UIViewController {
     

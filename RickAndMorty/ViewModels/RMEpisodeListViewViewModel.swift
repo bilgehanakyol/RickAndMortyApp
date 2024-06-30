@@ -1,34 +1,32 @@
 //
-//  RMCharacterListViewViewModel.swift
+//  RMEpisodeListViewViewModel.swift
 //  RickAndMorty
 //
-//  Created by Bilgehan Akyol on 12.06.2024.
+//  Created by Bilgehan Akyol on 29.06.2024.
 //
 
 import UIKit
 
-protocol RMCharacterListViewModelDelegate: AnyObject {
-    func didLoadInitialCharacters()
-    func didLoadMoreCharacters(with newIndexPaths: [IndexPath])
-    func didSelectCharacter(_ character: RMCharacter)
+protocol RMEpisodeListViewViewModelDelegate: AnyObject {
+    func didLoadInitialEpisodes()
+    func didLoadMoreEpisodes(with newIndexPaths: [IndexPath])
+    func didSelectEpisode(_ episode: RMEpisode)
 }
 
-/// View Model to handle character list view logic
-final class RMCharacterListViewViewModel: NSObject {
+/// View Model to handle episode list view logic
+final class RMEpisodeListViewViewModel: NSObject {
     
-    public weak var delegate: RMCharacterListViewModelDelegate?
+    public weak var delegate: RMEpisodeListViewViewModelDelegate?
     
     private var isLoadingMoreCharacters = false
     
-    private var characters: [RMCharacter] = [] {
+    private var episodes: [RMEpisode] = [] {
         didSet {
             //print("creating viewModels")
-            for character in characters {
-                let viewModel = RMCharacterCollectionViewCellViewModel(
-                    characterName: character.name,
-                    characterStatus: character.status,
-                    characterImageURL: URL(string: character.image)
-                )
+            for episode in episodes {
+                let viewModel = RMCharacterEpisodeCollectionViewCellViewModel(
+                    episodeDataUrl: URL(string: episode.url)
+                    )
                 if !cellViewModels.contains(viewModel) {
                     cellViewModels.append(viewModel)
                 }
@@ -36,24 +34,24 @@ final class RMCharacterListViewViewModel: NSObject {
         }
     }
     
-    private var cellViewModels: [RMCharacterCollectionViewCellViewModel] = []
+    private var cellViewModels: [RMCharacterEpisodeCollectionViewCellViewModel] = []
     
-    private var apiInfo: RMGetAllCharactersResponse.Info? =  nil
+    private var apiInfo: RMGetAllEpisodesResponse.Info? =  nil
     
-    /// Fetch initial set of characters (20)
-    public func fetchCharacter() {
+    /// Fetch initial set of episodes (20)
+    public func fetchEpisodes() {
         RMService.shared.execute(
-            .listCharacterRequests,
-            expecting: RMGetAllCharactersResponse.self
+            .listEpisodeRequests,
+            expecting: RMGetAllEpisodesResponse.self
         ) { [ weak self ] result in
             switch result {
             case .success(let responseModel):
                 let results = responseModel.results
                 let info = responseModel.info
-                self?.characters = results
+                self?.episodes = results
                 self?.apiInfo = info
                 DispatchQueue.main.async {
-                    self?.delegate?.didLoadInitialCharacters()
+                    self?.delegate?.didLoadInitialEpisodes()
                 }
             case .failure(let error):
                 print(String(describing: error))
@@ -61,8 +59,8 @@ final class RMCharacterListViewViewModel: NSObject {
         }
     }
     
-    /// Pageinate if additional characters are we need
-    public func fetchAdditionalCharacters(url: URL) {
+    /// Pageinate if additional episodes are we need
+    public func fetchAdditionalEpisodes(url: URL) {
         //fetch characters
         guard !isLoadingMoreCharacters else {
             return
@@ -75,7 +73,7 @@ final class RMCharacterListViewViewModel: NSObject {
             return
         }
         
-        RMService.shared.execute(request, expecting: RMGetAllCharactersResponse.self) { [weak self] result in
+        RMService.shared.execute(request, expecting: RMGetAllEpisodesResponse.self) { [weak self] result in
             guard let strongSelf = self else {//It's a common technique (self? -> strongSelf)
                 return
             }
@@ -86,7 +84,7 @@ final class RMCharacterListViewViewModel: NSObject {
                 let info = responseModel.info
                 strongSelf.apiInfo = info
                 
-                let originalCount = strongSelf.characters.count
+                let originalCount = strongSelf.episodes.count
                 let newCount = moreResults.count
                 let total = originalCount+newCount
                 let startingIndex = total - newCount
@@ -94,10 +92,10 @@ final class RMCharacterListViewViewModel: NSObject {
                     return IndexPath(row: $0, section: 0)
                 })
                 
-                strongSelf.characters.append(contentsOf: moreResults)
+                strongSelf.episodes.append(contentsOf: moreResults)
                 
                 DispatchQueue.main.async {
-                    strongSelf.delegate?.didLoadMoreCharacters(
+                    strongSelf.delegate?.didLoadMoreEpisodes(
                         with: indexPathsToAdd
                     )
                     strongSelf.isLoadingMoreCharacters = false
@@ -117,15 +115,17 @@ final class RMCharacterListViewViewModel: NSObject {
 
 //MARK: - CollectionView
 
-extension RMCharacterListViewViewModel: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+extension RMEpisodeListViewViewModel: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout 
+    {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return cellViewModels.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RMCharacterCollectionViewCell.cellIdentifer,
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: RMCharacterEpisodeCollectionViewCell.cellIdentifer,
             for: indexPath
-        ) as? RMCharacterCollectionViewCell else {
+        ) as? RMCharacterEpisodeCollectionViewCell else {
             fatalError("Unsupported cell")
         }
         cell.configure(with: cellViewModels[indexPath.row])
@@ -159,7 +159,7 @@ extension RMCharacterListViewViewModel: UICollectionViewDataSource, UICollection
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let bounds = UIScreen.main.bounds
         let width = (bounds.width-30)/2
-        let height = width*1.5
+        let height = width*0.7
         return CGSize(
             width: width,
             height: height
@@ -168,16 +168,16 @@ extension RMCharacterListViewViewModel: UICollectionViewDataSource, UICollection
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        let character = characters[indexPath.row]
-        delegate?.didSelectCharacter(character)
+        let selection = episodes[indexPath.row]
+        delegate?.didSelectEpisode(selection)
     }
 }
 
-//MARK: - Scroll View
+//MARK: - ScrollView
 
-extension RMCharacterListViewViewModel {
+extension RMEpisodeListViewViewModel {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard shouldShowLoadMoreIndicator, 
+        guard shouldShowLoadMoreIndicator,
               !isLoadingMoreCharacters,
               !cellViewModels.isEmpty,
               let nextUrlString = apiInfo?.next,
@@ -191,7 +191,7 @@ extension RMCharacterListViewViewModel {
             let totalScrollViewFixedHeight = scrollView.frame.size.height
             
             if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
-                self?.fetchAdditionalCharacters(url: url)
+                self?.fetchAdditionalEpisodes(url: url)
             }
             t.invalidate()
         }

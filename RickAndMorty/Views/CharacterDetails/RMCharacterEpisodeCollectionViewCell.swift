@@ -80,7 +80,7 @@ final class RMCharacterEpisodeCollectionViewCell: UICollectionViewCell {
             self?.seasonLabel.text = "Episode "+data.episode
             self?.airDateLabel.text = "Aired on "+data.air_date
         }
-        viewModel.fetchEpisode()
+        viewModel.fetchEpisodes()
     }
 
 }

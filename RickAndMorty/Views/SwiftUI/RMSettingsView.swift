@@ -5,30 +5,6 @@
 //  Created by Bilgehan Akyol on 6.07.2024.
 //
 
-//        List(viewModel.cellViewModels) { viewModel in
-//            HStack {
-////                if let image = viewModel.title {
-////                    Image(uiImage: image)
-////                        .resizable()
-////                        .frame(width: 20, height: 20)
-////                        .padding(8)
-////                        .background(Color(cellViewModel.iconBackgroundColor))
-////                        .cornerRadius(8)
-////                }
-//                Text(viewModel.title)
-//                    .padding(.leading, 10)
-//            }
-//            .padding(8)
-//        }
-//    }
-//}
-//
-//#Preview {
-//    RMSettingsView(viewModel: .init(cellViewModels: RMSettingsOption.allCases.compactMap({
-//        RMSettingsCellViewModel(type: $0)
-//    })))
-//}
-
 import SwiftUI
 
 struct RMSettingsView: View {
@@ -51,8 +27,13 @@ struct RMSettingsView: View {
                 }
                 Text(viewModel.title)
                     .padding(.leading, 10)
+                
+                Spacer()
             }
             .padding(.bottom, 3)
+            .onTapGesture {
+                viewModel.onTapHandler(viewModel.type)
+            }
         }
     }
 }
@@ -60,7 +41,8 @@ struct RMSettingsView: View {
 struct RMSettingsView_Previews: PreviewProvider {
     static var previews: some View {
         RMSettingsView(viewModel: .init(cellViewModels: RMSettingsOption.allCases.compactMap({
-            RMSettingsCellViewModel(type: $0)
+            RMSettingsCellViewModel(type: $0) { option in
+            }
         })))
     }
 }

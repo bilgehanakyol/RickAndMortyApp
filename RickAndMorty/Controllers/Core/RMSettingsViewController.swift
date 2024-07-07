@@ -7,19 +7,13 @@
 
 import UIKit
 import SwiftUI
+import SafariServices
+import StoreKit
 
 /// Controller to show various app options and settings
 final class RMSettingsViewController: UIViewController {
     
-    private let settingSwiftUIController = UIHostingController(
-        rootView: RMSettingsView(
-            viewModel: RMSettingsViewViewModel(
-                cellViewModels: RMSettingsOption.allCases.compactMap({
-                    return RMSettingsCellViewModel(type: $0)
-                })
-            )
-        )
-    )
+    private var settingSwiftUIController: UIHostingController<RMSettingsView>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,18 +23,47 @@ final class RMSettingsViewController: UIViewController {
     }
     
     private func addSwiftUIController() {
-        addChild(settingSwiftUIController)
-        settingSwiftUIController.didMove(toParent: self)
+        let settingsSwiftUIController = UIHostingController(
+            rootView: RMSettingsView(
+                viewModel: RMSettingsViewViewModel(
+                    cellViewModels: RMSettingsOption.allCases.compactMap({
+                        return RMSettingsCellViewModel(type: $0) { [weak self] option in
+                            self?.handleTap(option: option)
+                        }
+                    })
+                )
+            )
+        )
+        addChild(settingsSwiftUIController)
+        settingsSwiftUIController.didMove(toParent: self)
         
-        view.addSubview(settingSwiftUIController.view)
-        settingSwiftUIController.view.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(settingsSwiftUIController.view)
+        settingsSwiftUIController.view.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            settingSwiftUIController.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            settingSwiftUIController.view.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            settingSwiftUIController.view.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            settingSwiftUIController.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            settingsSwiftUIController.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            settingsSwiftUIController.view.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            settingsSwiftUIController.view.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            settingsSwiftUIController.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
+        
+        self.settingSwiftUIController = settingsSwiftUIController
     }
     
+    private func handleTap(option: RMSettingsOption) {
+        guard Thread.current.isMainThread else {
+            return
+        }
+        
+        if let url = option.targetUrl {
+            // open website
+            let vc = SFSafariViewController(url: url)
+            present(vc, animated: true)
+        } else if option == .rateApp {
+            //show rate prompt
+            if let windowScene = view.window?.windowScene {
+                SKStoreReviewController.requestReview(in: windowScene)
+            }
+        }
+    }
 }

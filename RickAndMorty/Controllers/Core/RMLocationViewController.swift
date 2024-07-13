@@ -8,7 +8,7 @@
 import UIKit
 
 /// Controller to show and search for Characters
-final class RMLocationViewController: UIViewController, RMLocationViewViewModelDelegate {
+final class RMLocationViewController: UIViewController, RMLocationViewViewModelDelegate, RMLocationViewDelegate {
         
     private let primaryView = RMLocationView()
     
@@ -18,6 +18,7 @@ final class RMLocationViewController: UIViewController, RMLocationViewViewModelD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        primaryView.delegate = self
         view.addSubViews(primaryView)
         view.backgroundColor = .systemBackground
         title = "Locations"
@@ -45,6 +46,14 @@ final class RMLocationViewController: UIViewController, RMLocationViewViewModelD
     
     @objc private func didTapShare() {
         
+    }
+    
+    //MARK: - RMLocationViewDelegate
+    
+    func rmLocationView(_ locationView: RMLocationView, didSelect location: RMLocation) {
+        let vc = RMLocationDetailViewController(location: location)
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     //MARK: - LocationViewModel Delegate

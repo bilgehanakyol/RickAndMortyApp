@@ -51,7 +51,9 @@ final class RMEpisodeDetailViewController: UIViewController, RMEpisodeDetailView
     }
     
     @objc private func didTapShare() {
-        
+        let vc = RMSearchViewController(config: .init(type: .character))
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     //MARK: - View Delegate

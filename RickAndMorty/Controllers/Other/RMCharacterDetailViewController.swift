@@ -46,6 +46,9 @@ final class RMCharacterDetailViewController: UIViewController {
     
     @objc private func didTapShare() {
         //Share character info
+        let vc = RMSearchViewController(config: .init(type: .character))
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func addConstraints() {

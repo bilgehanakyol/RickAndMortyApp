@@ -45,7 +45,9 @@ final class RMLocationViewController: UIViewController, RMLocationViewViewModelD
     }
     
     @objc private func didTapShare() {
-        
+        let vc = RMSearchViewController(config: RMSearchViewController.Config(type: .location))
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     //MARK: - RMLocationViewDelegate

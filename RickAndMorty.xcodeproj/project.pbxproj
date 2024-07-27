@@ -163,9 +163,9 @@
 			isa = PBXGroup;
 			children = (
 				9F1F6FFE2C43E22A000B1D78 /* RMSearchView.swift */,
-				9FBCD2CD2C5515590029DDF2 /* RMSearchResultsView.swift */,
 				9F1F70002C43E36D000B1D78 /* RMNoSearchResultsView.swift */,
 				9F1F70022C43E38E000B1D78 /* RMSearchInputView.swift */,
+				9FBCD2CD2C5515590029DDF2 /* RMSearchResultsView.swift */,
 			);
 			path = Searchs;
 			sourceTree = "<group>";

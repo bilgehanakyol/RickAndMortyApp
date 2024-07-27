@@ -21,6 +21,7 @@ final class RMSearchViewViewModel {
     private var optionMap: [RMSearchInputViewViewModel.DynamicOption:String] = [:]
     
     private var searchResultHandler: ((RMSearchResultViewModel) -> Void)?
+    private var noResultHandler: (() -> Void)?
     
     //MARK: - Init
     
@@ -32,6 +33,10 @@ final class RMSearchViewViewModel {
     
     public func registerSearchResultHandler(_ block: @escaping (RMSearchResultViewModel) -> Void) {
         self.searchResultHandler = block
+    }
+    
+    public func registerNoResultHandler(_ block: @escaping () -> Void) {
+        self.noResultHandler = block
     }
     
     public func executeSearch() {
@@ -74,7 +79,7 @@ final class RMSearchViewViewModel {
             case .success(let model):
                 self?.processSearchResults(model: model)
             case .failure(let failure):
-                print("failed to get results")
+                self?.handleNoResults()
                 break
             }
         }
@@ -109,8 +114,12 @@ final class RMSearchViewViewModel {
         }
         else {
             // error no results view
+            handleNoResults()
         }
-        
+    }
+    
+    private func handleNoResults() {
+        noResultHandler?()
     }
     
     public func set(query text: String) {

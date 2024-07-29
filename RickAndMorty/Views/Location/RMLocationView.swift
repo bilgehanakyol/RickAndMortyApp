@@ -15,6 +15,8 @@ final class RMLocationView: UIView {
     
     public weak var delegate: RMLocationViewDelegate?
     
+    public var isLoadingMoreLocations = false
+    
     private var viewModel: RMLocationViewViewModel? {
         didSet {
             spinner.stopAnimating()
@@ -22,6 +24,14 @@ final class RMLocationView: UIView {
             tableView.reloadData()
             UIView.animate(withDuration: 0.2) {
                 self.tableView.alpha = 1
+            }
+            
+            viewModel?.registerDidFinishPaginationBlock { [weak self] in
+                DispatchQueue.main.async {
+                    // loading indicator and reload data
+                    self?.tableView.tableFooterView = nil
+                    self?.tableView.reloadData()
+                }
             }
         }
     }
@@ -112,4 +122,37 @@ extension RMLocationView: UITableViewDataSource {
         cell.configure(with: cellViewModel)
         return cell
     }
+}
+
+extension RMLocationView: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard let viewModel = viewModel,
+              !viewModel.cellViewModels.isEmpty,
+              viewModel.shouldShowLoadMoreIndicator,
+              !viewModel.isLoadingMoreLocations else {
+            return
+        }
+        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] t in
+            let offset = scrollView.contentOffset.y
+            let totalContentHeight = scrollView.contentSize.height // Inside the scrollView
+            let totalScrollViewFixedHeight = scrollView.frame.size.height
+            
+            if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
+                DispatchQueue.main.async {
+                    self?.showLoadingndicator()
+                }
+                viewModel.fetchAdditionalLocations()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now()+3, execute: {
+                    self?.tableView.reloadData()
+                })
+            }
+            t.invalidate()
+        }
+    }
+    
+    private func showLoadingndicator() {
+        tableView.tableFooterView = RMTableLoadingFooterView()
+    }
+    
 }

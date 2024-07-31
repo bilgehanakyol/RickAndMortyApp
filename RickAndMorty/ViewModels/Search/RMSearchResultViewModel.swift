@@ -32,7 +32,7 @@ final class RMSearchResultViewModel {
             return
         }
         
-       isLoadingMoreResults = true
+        isLoadingMoreResults = true
         
         guard let request = RMRequest(url: url) else {
             isLoadingMoreResults = false
@@ -113,7 +113,7 @@ final class RMSearchResultViewModel {
                         return RMCharacterCollectionViewCellViewModel(
                             characterName: $0.name,
                             characterStatus: $0.status,
-                            characterImageURL: URL(string: $0.url)
+                            characterImageURL: URL(string: $0.image)
                         )
                     })
                     

@@ -212,6 +212,32 @@ extension RMSearchResultsView: UICollectionViewDelegate, UICollectionViewDataSou
             height: 100
         )
     }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionFooter else {
+            fatalError("Unsupported")
+        }
+        
+        guard let footer = collectionView.dequeueReusableSupplementaryView(
+            ofKind: kind,
+            withReuseIdentifier: RMFooterLoadingCollectionReusableView.identifier,
+            for: indexPath
+        ) as? RMFooterLoadingCollectionReusableView
+                else {
+            fatalError("Unupported")
+        }
+        footer.startAnimatig()
+        return footer
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        guard let viewModel = viewModel,
+              viewModel.shouldShowLoadMoreIndicator
+        else {
+            return .zero
+        }
+        return CGSize(width: collectionView.frame.height, height: 100)
+    }
 
 }
 
@@ -227,7 +253,26 @@ extension RMSearchResultsView: UIScrollViewDelegate {
     }
     
     private func handleCharacterOrEpisodePagination(scrollView: UIScrollView) {
+        guard let viewModel = viewModel,
+              viewModel.shouldShowLoadMoreIndicator,
+              !viewModel.isLoadingMoreResults,
+              !collectionViewCellViewModels.isEmpty else {
+            return
+        }
         
+        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] t in
+            let offset = scrollView.contentOffset.y
+            let totalContentHeight = scrollView.contentSize.height // Inside the scrollView
+            let totalScrollViewFixedHeight = scrollView.frame.size.height
+            
+            if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
+                viewModel.fetchAdditionalResults { [weak self] newResults in
+                    self?.tableView.tableFooterView = nil
+                    self?.collectionViewCellViewModels = newResults
+                }
+            }
+            t.invalidate()
+        }
     }
     
     private func handleLocationPagination(scrollView: UIScrollView) {
@@ -259,11 +304,11 @@ extension RMSearchResultsView: UIScrollViewDelegate {
     }
     
     private func showTableLoadingIndicator() {
-        guard let viewModel = viewModel, viewModel.shouldShowLoadMoreIndicator else {
-            // is next url doesnt exist dont show loading indicator
-            tableView.tableFooterView = nil
-            return
-        }
+//        guard let viewModel = viewModel, viewModel.shouldShowLoadMoreIndicator else {
+//            // is next url doesnt exist dont show loading indicator
+//            tableView.tableFooterView = nil
+//            return
+//        } my solution
         let footer = RMTableLoadingFooterView(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: 100))
         tableView.tableFooterView = footer
     }

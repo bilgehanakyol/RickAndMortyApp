@@ -129,6 +129,8 @@ extension RMSearchView: RMSearchInputViewDelegate {
     }
 }
 
+//MARK: - RMSearchResultsViewDelegate
+
 extension RMSearchView: RMSearchResultsViewDelegate {
     func rmSearchResultsView(_ resultsView: RMSearchResultsView, didTapLocationAt index: Int) {
         guard let locationModel = viewModel.locationSearchResult(at: index) else {

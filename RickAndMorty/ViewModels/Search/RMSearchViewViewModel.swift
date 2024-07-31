@@ -42,7 +42,9 @@ final class RMSearchViewViewModel {
     }
     
     public func executeSearch() {
-        // create request based on filters
+        guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty else {
+            return
+        }
         
         // build arguments
         var queryParams: [URLQueryItem] = [
@@ -88,7 +90,8 @@ final class RMSearchViewViewModel {
     }
     
     private func processSearchResults(model: Codable) {
-        var resultsVM: RMSearchResultViewModel?
+        var resultsVM: RMSearchResultType?
+        var nextUrl: String?
         if let characterResults = model as? RMGetAllCharactersResponse {
             resultsVM = .characters(characterResults.results.compactMap({
                 return RMCharacterCollectionViewCellViewModel(
@@ -97,6 +100,7 @@ final class RMSearchViewViewModel {
                     characterImageURL: URL(string: $0.image)
                 )
             }))
+            nextUrl = characterResults.info.next
         }
         else if let episodesResults = model as? RMGetAllEpisodesResponse {
             resultsVM = .episodes(episodesResults.results.compactMap({
@@ -104,18 +108,20 @@ final class RMSearchViewViewModel {
                     episodeDataUrl: URL(string: $0.url)
                 )
             }))
+            nextUrl = episodesResults.info.next
         }
         else if let locationResults = model as? RMGetAllLocationsResponse {
             resultsVM = .locations(locationResults.results.compactMap({
                 return RMLocationTableViewCellViewModel(location: $0)
             }))
+            nextUrl = locationResults.info.next
         }
         
         if let results = resultsVM {
             self.searchResultModel = model
-            self.searchResultHandler?(results)
-        }
-        else {
+            let vm = RMSearchResultViewModel(results: results, next: nextUrl)
+            self.searchResultHandler?(vm)
+        } else {
             // error no results view
             handleNoResults()
         }
